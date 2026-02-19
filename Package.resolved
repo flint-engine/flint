@@ -2,12 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "ANSIEscapeCode",
-        "repositoryURL": "https://github.com/flintbox/ANSIEscapeCode",
+        "package": "ansi-escape-code",
+        "repositoryURL": "https://github.com/swift-cli/ansi-escape-code",
         "state": {
           "branch": null,
-          "revision": "892f5f3067ea4c029af05cb45efb3b6a3be2f838",
-          "version": "0.1.1"
+          "revision": "ee9963c502fd0b423d4a803887ef2338ef260231",
+          "version": "0.1.2"
         }
       },
       {
@@ -20,12 +20,12 @@
         }
       },
       {
-        "package": "Motor",
-        "repositoryURL": "https://github.com/flintbox/Motor",
+        "package": "motor",
+        "repositoryURL": "https://github.com/swift-cli/motor",
         "state": {
           "branch": null,
-          "revision": "ec165db3be9046b956cc3a9b035d4134ab95998e",
-          "version": "0.1.2"
+          "revision": "a2b7ac65fdd65171ef2ad5ea301b301c987da9b6",
+          "version": "0.1.3"
         }
       },
       {
@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/jasonnam/PathFinder",
         "state": {
           "branch": "develop",
-          "revision": "beb4667afc6e3d65872d9e9416ec916107641f8a",
+          "revision": "ff5bdafdcea9385c24e85bf502f862fecdba91e8",
           "version": null
         }
       },

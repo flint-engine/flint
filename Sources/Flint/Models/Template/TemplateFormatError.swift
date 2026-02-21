@@ -24,13 +24,12 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Template format error.
 ///
 /// - manifestFileNotExists: Manifest file not exists.
 enum TemplateFormatError: Error {
-    case manifestFileNotExists(Path)
+    case manifestFileNotExists(URL)
 }
 
 // MARK: - LocalizedError

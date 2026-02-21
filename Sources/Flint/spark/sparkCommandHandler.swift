@@ -24,20 +24,19 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
-import Work
+import Execute
 import Yams
 
 /// Spark command handler.
-let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNameOperand = operandValues[optional: 0]
-    let templatePathOptionValue = optionValues.findOptionalArgument(for: sparkTemplatePathOption)
-    let outputPathOptionValue = optionValues.findOptionalArgument(for: sparkOutputPathOption)
-    let inputFilePathOptionValue = optionValues.findOptionalArgument(for: sparkInputFilePathOption)
-    let force = optionValues.have(sparkForceOption)
-    let verbose = optionValues.have(sparkVerboseOption)
+func sparkCommandHandler(
+    templateNameOperand: String?,
+    templatePathOptionValue: String?,
+    outputPathOptionValue: String?,
+    inputFilePathOptionValue: String?,
+    variablesOptionValue: [String],
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -48,6 +47,7 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
             └╴Template Path: \(templatePathOptionValue ?? "nil")
             └╴Output Path  : \(outputPathOptionValue ?? "nil")
             └╴Input Path   : \(inputFilePathOptionValue ?? "nil")
+            └╴Variables    : \(variablesOptionValue)
             └╴Force        : \(force)
             └╴Verbose      : \(verbose)
             """
@@ -57,14 +57,14 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     // Prepare template.
     let template: Template
     do {
-        let templatePath: Path
+        let templatePath: URL
         if let templateName = templateNameOperand {
-            templatePath = try getTemplateHomePath()[templateName]
+            templatePath = try getTemplateHomePath().appendingPathComponent(templateName)
             if let templatePathOptionValue = templatePathOptionValue {
                 printWarning("Ignore \(templatePathOptionValue)")
             }
         } else if let templatePathOptionValue = templatePathOptionValue {
-            templatePath = Path(fileURLWithPath: templatePathOptionValue)
+            templatePath = URL(fileURLWithPath: templatePathOptionValue)
         } else {
             printError("Template not specified")
             return
@@ -76,13 +76,13 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     }
 
     // Output path.
-    let outputPath: Path
+    let outputPath: URL
     if let outputPathOptionValue = outputPathOptionValue {
-        outputPath = Path(fileURLWithPath: outputPathOptionValue)
+        outputPath = URL(fileURLWithPath: outputPathOptionValue)
     } else {
         print("Output Path [--output | -o]: ", terminator: "")
         if let outputPathInput = readLine() {
-            outputPath = Path(fileURLWithPath: FileManager.default.currentDirectoryPath)[outputPathInput]
+            outputPath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(outputPathInput)
         } else {
             printError("Output path not specified")
             return
@@ -99,18 +99,18 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     }
 
     if let inputFilePathOptionValue = inputFilePathOptionValue {
-        let inputPath = Path(fileURLWithPath: inputFilePathOptionValue)
+        let inputPath = URL(fileURLWithPath: inputFilePathOptionValue)
         do {
-            switch inputPath.rawValue.pathExtension {
+            switch inputPath.pathExtension {
             case "json":
-                let data = try Data(contentsOf: inputPath.rawValue)
+                let data = try Data(contentsOf: inputPath)
                 for (key, value) in try JSONDecoder().decode([String: String].self, from: data) {
                     if (template.manifest.variables ?? []).map({ $0.name }).contains(key) {
                         inputs[key] = value
                     }
                 }
             case "yaml", "yml":
-                let string = try String(contentsOf: inputPath.rawValue)
+                let string = try String(contentsOf: inputPath)
                 for (key, value) in try YAMLDecoder().decode([String: String].self, from: string) {
                     if (template.manifest.variables ?? []).map({ $0.name }).contains(key) {
                         inputs[key] = value
@@ -123,6 +123,23 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
         } catch {
             printError(error.localizedDescription)
             return
+        }
+    }
+
+    if !variablesOptionValue.isEmpty {
+        for variable in variablesOptionValue {
+            let parts = variable.split(separator: ":", maxSplits: 1).map(String.init)
+            if parts.count == 2 {
+                let key = parts[0]
+                let value = parts[1]
+                if (template.manifest.variables ?? []).map({ $0.name }).contains(key) {
+                    inputs[key] = value
+                } else {
+                    printWarning("Variable \(key) is not defined in the template manifest.")
+                }
+            } else {
+                printWarning("Invalid variable format: \(variable). Expected KEY:VALUE.")
+            }
         }
     }
 
@@ -144,22 +161,15 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
         printVerbose("Execute prehooks")
     }
     for prehook in template.manifest.prehooks ?? [] {
-        let scriptPath = template.prehookScriptsPath[prehook]
-        if scriptPath.exists {
-            let work = Work(command: "sh \"\(scriptPath.path)\"",
-                standardOutputHandler: { standardOutput in
-                    print(standardOutput)
-                }, standardErrorHandler: { standardError in
-                    print(standardError)
-                }
-            )
+        let scriptPath = template.prehookScriptsPath.appendingPathComponent(prehook)
+        if FileManager.default.fileExists(atPath: scriptPath.path) {
+            let work = ShCommand(command: "sh \"\(scriptPath.path)\"")
             var environment = ProcessInfo.processInfo.environment
             environment["FLINT_OUTPUT_PATH"] = outputPath.path
             for (key, input) in inputs {
                 environment["FLINT_\(key.replacingOccurrences(of: " ", with: "_"))"] = input
             }
-            work.task.environment = environment
-            work.start()
+            Executor().sync(work, environment: environment)
         } else {
             printWarning("Cannot find prehook script \(prehook)")
         }
@@ -168,7 +178,14 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     // Process variables.
     do {
         let templateFilesPath = template.templateFilesPath
-        enumerationLoop: for content in try templateFilesPath.enumerated() {
+        var contents: [URL] = []
+
+        let enumerator = FileManager.default.enumerator(at: templateFilesPath, includingPropertiesForKeys: nil)
+        while let element = enumerator?.nextObject() as? URL {
+            contents.append(element)
+        }
+
+        enumerationLoop: for content in contents {
             var relativePath = String(content.path.dropFirst(templateFilesPath.path.count + 1))
 
             if verbose {
@@ -177,12 +194,12 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
 
             processVariables(string: &relativePath, template: template, inputs: inputs)
 
-            let contentOutputPath = outputPath[relativePath]
+            let contentOutputPath = outputPath.appendingPathComponent(relativePath)
 
             // Check existing file
-            if contentOutputPath.exists {
+            if FileManager.default.fileExists(atPath: contentOutputPath.path) {
                 if force {
-                    try contentOutputPath.remove()
+                    try FileManager.default.removeItem(at: contentOutputPath)
                 } else {
                     print("File already exists at \(contentOutputPath.path)")
                     inputLoop: repeat {
@@ -190,7 +207,7 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
                         if let option = readLine() {
                             switch option {
                             case "override", "o":
-                                try contentOutputPath.remove()
+                                try FileManager.default.removeItem(at: contentOutputPath)
                                 break inputLoop
                             case "skip", "s":
                                 continue enumerationLoop
@@ -206,19 +223,28 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
                 }
             }
 
-            if !contentOutputPath.parent.exists {
-                try contentOutputPath.parent.createDirectory()
+            if !FileManager.default.fileExists(atPath: contentOutputPath.deletingLastPathComponent().path) {
+                try FileManager.default.createDirectory(at: contentOutputPath.deletingLastPathComponent(), withIntermediateDirectories: true)
             }
 
-            if content.isDirectory {
-                try contentOutputPath.createDirectory()
+            var contentIsDirectory: ObjCBool = false
+            _ = FileManager.default.fileExists(atPath: content.path, isDirectory: &contentIsDirectory)
+
+            if contentIsDirectory.boolValue {
+                try FileManager.default.createDirectory(at: contentOutputPath, withIntermediateDirectories: true)
             } else {
                 var encoding = String.Encoding.utf8
                 if var dataString = try? String(contentsOfFile: content.path, usedEncoding: &encoding) {
                     processVariables(string: &dataString, outputPath: contentOutputPath, template: template, inputs: inputs)
                     try dataString.write(toFile: contentOutputPath.path, atomically: true, encoding: encoding)
+
+                    // Copy file permissions
+                    let attributes = try FileManager.default.attributesOfItem(atPath: content.path)
+                    if let permissions = attributes[.posixPermissions] {
+                        try FileManager.default.setAttributes([.posixPermissions: permissions], ofItemAtPath: contentOutputPath.path)
+                    }
                 } else {
-                    try content.copy(to: contentOutputPath)
+                    try FileManager.default.copyItem(at: content, to: contentOutputPath)
                 }
             }
         }
@@ -232,22 +258,15 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
         printVerbose("Execute posthooks")
     }
     for posthook in template.manifest.posthooks ?? [] {
-        let scriptPath = template.posthookScriptsPath[posthook]
-        if scriptPath.exists {
-            let work = Work(command: "sh \"\(scriptPath.path)\"",
-                standardOutputHandler: { standardOutput in
-                    print(standardOutput)
-                }, standardErrorHandler: { standardError in
-                    print(standardError)
-                }
-            )
+        let scriptPath = template.posthookScriptsPath.appendingPathComponent(posthook)
+        if FileManager.default.fileExists(atPath: scriptPath.path) {
+            let work = ShCommand(command: "sh \"\(scriptPath.path)\"")
             var environment = ProcessInfo.processInfo.environment
             environment["FLINT_OUTPUT_PATH"] = outputPath.path
             for (key, input) in inputs {
                 environment["FLINT_\(key.replacingOccurrences(of: " ", with: "_"))"] = input
             }
-            work.task.environment = environment
-            work.start()
+            Executor().sync(work, environment: environment)
         } else {
             printWarning("Cannot find posthook script \(posthook)")
         }

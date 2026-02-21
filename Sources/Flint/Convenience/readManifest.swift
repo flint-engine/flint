@@ -24,7 +24,6 @@
 //
 
 import Foundation
-import PathFinder
 import Yams
 
 /// Read JSON manifest file.
@@ -32,8 +31,8 @@ import Yams
 /// - Parameter path: Path for JSON manifest file.
 /// - Returns: Manifest.
 /// - Throws: Read data error. Decode error.
-func readJSONManifest(atPath path: Path) throws -> Manifest {
-    let data = try Data(contentsOf: path.rawValue)
+func readJSONManifest(atPath path: URL) throws -> Manifest {
+    let data = try Data(contentsOf: path)
     return try JSONDecoder().decode(Manifest.self, from: data)
 }
 
@@ -42,7 +41,7 @@ func readJSONManifest(atPath path: Path) throws -> Manifest {
 /// - Parameter path: Path for YAML manifest file.
 /// - Returns: Manifest.
 /// - Throws: Read data error. Decode error.
-func readYAMLManifest(atPath path: Path) throws -> Manifest {
-    let string = try String(contentsOf: path.rawValue, encoding: .utf8)
+func readYAMLManifest(atPath path: URL) throws -> Manifest {
+    let string = try String(contentsOf: path, encoding: .utf8)
     return try YAMLDecoder().decode(Manifest.self, from: string)
 }

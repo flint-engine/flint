@@ -24,14 +24,12 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 
 /// Template remove command handler.
-let templateRemoveCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNames = operandValues
-    let verbose = optionValues.have(templateRemoveVerboseOption)
+func templateRemoveCommandHandler(
+    templateNames: [String],
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -45,10 +43,10 @@ let templateRemoveCommandHandler: CommandHandler = { _, _, operandValues, option
     }
 
     // Template paths to remove.
-    var templatePathsToRemove: [Path] = []
+    var templatePathsToRemove: [URL] = []
     do {
         for templateName in templateNames {
-            templatePathsToRemove.append(try getTemplateHomePath()[templateName])
+            templatePathsToRemove.append(try getTemplateHomePath().appendingPathComponent(templateName))
         }
     } catch {
         printError(error.localizedDescription)
@@ -67,7 +65,7 @@ let templateRemoveCommandHandler: CommandHandler = { _, _, operandValues, option
         }
 
         do {
-            try templatePathToRemove.remove()
+            try FileManager.default.removeItem(at: templatePathToRemove)
             print("✓".color(.green) + " Removed")
         } catch {
             printError(error.localizedDescription)

@@ -24,19 +24,18 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Process file attributes.
 ///
 /// - Parameters:
 ///   - string: Raw string.
 ///   - outputPath: Output file path.
-func processFileAttributes(string: inout String, outputPath: Path) {
+func processFileAttributes(string: inout String, outputPath: URL) {
     // Process file names
-    processFileNames(string: &string, fileName: outputPath.name, tagOpening: "___", tagClosing: "___")
-    processFileNames(string: &string, fileName: outputPath.name, tagOpening: "__", tagClosing: "__")
-    processFileNames(string: &string, fileName: outputPath.name, tagOpening: "--", tagClosing: "--")
-    processFileNames(string: &string, fileName: outputPath.name, tagOpening: "{{", tagClosing: "}}")
+    processFileNames(string: &string, fileName: outputPath.lastPathComponent, tagOpening: "___", tagClosing: "___")
+    processFileNames(string: &string, fileName: outputPath.lastPathComponent, tagOpening: "__", tagClosing: "__")
+    processFileNames(string: &string, fileName: outputPath.lastPathComponent, tagOpening: "--", tagClosing: "--")
+    processFileNames(string: &string, fileName: outputPath.lastPathComponent, tagOpening: "{{", tagClosing: "}}")
 }
 
 /// Process file names. `--FILE:NAME--`

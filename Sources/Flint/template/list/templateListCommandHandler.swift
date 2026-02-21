@@ -24,13 +24,11 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 
 /// Template list command handler.
-let templateListCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let verbose = optionValues.have(templateListVerboseOption)
+func templateListCommandHandler(
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -43,7 +41,7 @@ let templateListCommandHandler: CommandHandler = { _, _, operandValues, optionVa
     }
 
     // Prepare paths.
-    let templateHomePath: Path
+    let templateHomePath: URL
     do {
         templateHomePath = try getTemplateHomePath()
     } catch {
@@ -55,28 +53,31 @@ let templateListCommandHandler: CommandHandler = { _, _, operandValues, optionVa
     if verbose {
         printVerbose(templateHomePath.path)
     }
-    do {
-        for content in try templateHomePath.enumerated() {
-            guard let template = try? Template(path: content) else { continue }
 
-            let templateName: String
-            if verbose {
-                templateName = content.path
-            } else {
-                templateName = String(content.path.dropFirst(templateHomePath.path.count + 1))
-            }
+    var contents: [URL] = []
 
-            let output: String
-            if let description = template.manifest.description {
-                output = "\(templateName.boldOutput) - \(description)"
-            } else {
-                output = templateName.boldOutput
-            }
+    let enumerator = FileManager.default.enumerator(at: templateHomePath, includingPropertiesForKeys: nil)
+    while let element = enumerator?.nextObject() as? URL {
+        contents.append(element)
+    }
 
-            print(output)
+    for content in contents {
+        guard let template = try? Template(path: content) else { continue }
+
+        let templateName: String
+        if verbose {
+            templateName = content.path
+        } else {
+            templateName = String(content.path.dropFirst(templateHomePath.path.count + 1))
         }
-    } catch {
-        printError(error.localizedDescription)
-        return
+
+        let output: String
+        if let description = template.manifest.description {
+            output = "\(templateName.boldOutput) - \(description)"
+        } else {
+            output = templateName.boldOutput
+        }
+
+        print(output)
     }
 }

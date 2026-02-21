@@ -13,7 +13,7 @@ versionSwift.enumerateLines { line, _ in
     lines.append(line)
 }
 lines.removeLast()
-lines.append("let version = \"\(version)\"\n")
+lines.append("let flintVersion = \"\(version)\"\n")
 let newFileContent = lines.joined(separator: "\n")
 
 try! newFileContent.write(toFile: pathToVersionSwift, atomically: true, encoding: .utf8)

@@ -24,14 +24,13 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Process all kind of included files.
 ///
 /// - Parameters:
 ///   - string: Raw string.
 ///   - includedFilesPath: Included files path.
-func processIncludedFiles(string: inout String, includedFilesPath: Path) {
+func processIncludedFiles(string: inout String, includedFilesPath: URL) {
     processIncludedFiles(string: &string, includedFilesPath: includedFilesPath, tagOpening: "___", tagClosing: "___")
     processIncludedFiles(string: &string, includedFilesPath: includedFilesPath, tagOpening: "__", tagClosing: "__")
     processIncludedFiles(string: &string, includedFilesPath: includedFilesPath, tagOpening: "--", tagClosing: "--")
@@ -45,7 +44,7 @@ func processIncludedFiles(string: inout String, includedFilesPath: Path) {
 ///   - includedFilesPath: Included files path.
 ///   - tagOpening: Tag opening.
 ///   - tagClosing: Tag closing.
-func processIncludedFiles(string: inout String, includedFilesPath: Path, tagOpening: String, tagClosing: String) {
+func processIncludedFiles(string: inout String, includedFilesPath: URL, tagOpening: String, tagClosing: String) {
     repeat {
         // Get include tag
         let regex = "(?<=\(tagOpening)INCLUDE:)(.*?)(?=\(tagClosing))"
@@ -53,7 +52,7 @@ func processIncludedFiles(string: inout String, includedFilesPath: Path, tagOpen
             break
         }
         let includeTag = String(string[includeTagRange])
-        let includedFileString = (try? String(contentsOf: includedFilesPath[includeTag].rawValue)) ?? ""
+        let includedFileString = (try? String(contentsOf: includedFilesPath.appendingPathComponent(includeTag))) ?? ""
 
         // Replace tag
         let trimmedTagOpening = tagOpening.replacingOccurrences(of: "\\", with: "")

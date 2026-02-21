@@ -23,49 +23,16 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-let program = Program(
-    commands: [
-        templateCloneCommand,
-        templateCloneCommandAlias,
-        templateAddCommand,
-        templateAddCommandAlias,
-        templateListCommand,
-        templateListCommandAlias,
-        templateRemoveCommand,
-        templateRemoveCommandAlias,
-        sparkCommand,
-        sparkCommandAlias,
-        inputCommand,
-        inputCommandAlias,
-        versionCommand,
-        versionCommandAlias,
-        helpCommand,
-        helpCommandAlias
-    ]
-)
+struct Flint: ParsableCommand {
 
-do {
-    try program.run(withArguments: Array(CommandLine.arguments.dropFirst()))
-} catch let error as CommandParsingError {
-    switch error {
-    case .commandNotFound:
-        print("Cannot find command")
-    }
-} catch let error as OperandParsingError {
-    switch error {
-    case .invalidNumberOfOperands(_, _, _):
-        print("Invalid number of operands")
-    }
-} catch let error as OptionParsingError {
-    switch error {
-    case .missingOptionArgument(_, let option):
-        print("Missing option argument for \(option.name)")
-    case .missingOptions(_, let options):
-        print("Missing options \(options.map { $0.name })")
-    }
-} catch {
-    print(error.localizedDescription)
+    static let configuration = CommandConfiguration(
+        commandName: "flint",
+        abstract: "A local code generator built in Swift.",
+        version: flintVersion,
+        subcommands: [Spark.self, Input.self, TemplateCommand.self]
+    )
 }
+
+Flint.main()

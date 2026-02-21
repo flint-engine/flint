@@ -24,17 +24,15 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 import Motor
 
 /// Template add command handler.
-let templateAddCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templatePathOperand = operandValues[0]
-    let templateNameOperand = operandValues[optional: 1]
-    let force = optionValues.have(templateAddForceOption)
-    let verbose = optionValues.have(templateAddVerboseOption)
+func templateAddCommandHandler(
+    templatePathOperand: String,
+    templateNameOperand: String?,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -50,21 +48,21 @@ let templateAddCommandHandler: CommandHandler = { _, _, operandValues, optionVal
     }
 
     // Prepare paths.
-    let templatePath = Path(fileURLWithPath: templatePathOperand)
-    let pathToCopyTemplate: Path
+    let templatePath = URL(fileURLWithPath: templatePathOperand)
+    let pathToCopyTemplate: URL
     do {
-        let templateName = templateNameOperand ?? templatePath.rawValue.lastPathComponent
-        pathToCopyTemplate = try getTemplateHomePath()[templateName]
+        let templateName = templateNameOperand ?? templatePath.lastPathComponent
+        pathToCopyTemplate = try getTemplateHomePath().appendingPathComponent(templateName)
     } catch {
         printError(error.localizedDescription)
         return
     }
 
     // Check existing template.
-    if pathToCopyTemplate.exists {
+    if FileManager.default.fileExists(atPath: pathToCopyTemplate.path) {
         if force {
             do {
-                try pathToCopyTemplate.remove()
+                try FileManager.default.removeItem(at: pathToCopyTemplate)
             } catch {
                 printError(error.localizedDescription)
                 return
@@ -83,10 +81,10 @@ let templateAddCommandHandler: CommandHandler = { _, _, operandValues, optionVal
     let spinner = Spinner(pattern: Patterns.dots, delay: 2)
     spinner.start(message: "Copying...")
     do {
-        if !pathToCopyTemplate.parent.exists {
-            try pathToCopyTemplate.parent.createDirectory()
+        if !FileManager.default.fileExists(atPath: pathToCopyTemplate.deletingLastPathComponent().path) {
+            try FileManager.default.createDirectory(at: pathToCopyTemplate.deletingLastPathComponent(), withIntermediateDirectories: true)
         }
-        try templatePath.copy(to: pathToCopyTemplate)
+        try FileManager.default.copyItem(at: templatePath, to: pathToCopyTemplate)
         spinner.stop(message: "✓".color(.green) + " Done")
     } catch {
         spinner.stop()

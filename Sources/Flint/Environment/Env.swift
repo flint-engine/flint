@@ -24,7 +24,6 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Flint environment variables.
 struct Env {
@@ -35,8 +34,8 @@ struct Env {
     }
 
     /// Template home path. `FLINT_TEMPLATE_HOME`
-    static var templateHomePath: Path? {
+    static var templateHomePath: URL? {
         guard let environmentValue = environment["FLINT_TEMPLATE_HOME"] else { return nil }
-        return Path(fileURLWithPath: environmentValue)
+        return URL(fileURLWithPath: environmentValue)
     }
 }

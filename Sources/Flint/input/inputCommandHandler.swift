@@ -24,18 +24,16 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 
 /// Input command handler.
-let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNameOperand = operandValues[optional: 0]
-    let templatePathOptionValue = optionValues.findOptionalArgument(for: inputTemplatePathOption)
-    let outputPathOptionValue = optionValues.findOptionalArgument(for: inputOutputPathOption)
-    let yaml = optionValues.have(inputYAMLOption)
-    let force = optionValues.have(inputForceOption)
-    let verbose = optionValues.have(inputVerboseOption)
+func inputCommandHandler(
+    templateNameOperand: String?,
+    templatePathOptionValue: String?,
+    outputPathOptionValue: String?,
+    yaml: Bool,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -55,14 +53,14 @@ let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     // Prepare template.
     let template: Template
     do {
-        let templatePath: Path
+        let templatePath: URL
         if let templateName = templateNameOperand {
-            templatePath = try getTemplateHomePath()[templateName]
+            templatePath = try getTemplateHomePath().appendingPathComponent(templateName)
             if let templatePathOptionValue = templatePathOptionValue {
                 printWarning("Ignore \(templatePathOptionValue)")
             }
         } else if let templatePathOptionValue = templatePathOptionValue {
-            templatePath = Path(fileURLWithPath: templatePathOptionValue)
+            templatePath = URL(fileURLWithPath: templatePathOptionValue)
         } else {
             printError("Template not specified")
             return
@@ -74,19 +72,19 @@ let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     }
 
     // Output path.
-    let outputPath: Path
+    let outputPath: URL
     let fileName = yaml ? "variables.yml" : "variables.json"
     if let outputPathOptionValue = outputPathOptionValue {
-        outputPath = Path(fileURLWithPath: outputPathOptionValue)[fileName]
+        outputPath = URL(fileURLWithPath: outputPathOptionValue).appendingPathComponent(fileName)
     } else {
-        outputPath = Path(fileURLWithPath: FileManager.default.currentDirectoryPath)[fileName]
+        outputPath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(fileName)
     }
 
     // Check if output path is valid.
-    if outputPath.exists {
+    if FileManager.default.fileExists(atPath: outputPath.path) {
         if force {
             do {
-                try outputPath.remove()
+                try FileManager.default.removeItem(at: outputPath)
             } catch {
                 printError(error.localizedDescription)
                 return
@@ -98,9 +96,9 @@ let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     }
 
     // Create directory path.
-    if !outputPath.parent.exists {
+    if !FileManager.default.fileExists(atPath: outputPath.deletingLastPathComponent().path) {
         do {
-            try outputPath.parent.createDirectory()
+            try FileManager.default.createDirectory(at: outputPath.deletingLastPathComponent(), withIntermediateDirectories: true)
         } catch {
             printError(error.localizedDescription)
             return
@@ -121,7 +119,7 @@ let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
             }
         }
         do {
-            try output.write(to: outputPath.rawValue, atomically: true, encoding: .utf8)
+            try output.write(to: outputPath, atomically: true, encoding: .utf8)
         } catch {
             printError(error.localizedDescription)
             return
@@ -133,7 +131,7 @@ let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
         }
         output.append("}\n")
         do {
-            try output.write(to: outputPath.rawValue, atomically: true, encoding: .utf8)
+            try output.write(to: outputPath, atomically: true, encoding: .utf8)
         } catch {
             printError(error.localizedDescription)
             return

@@ -24,19 +24,17 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 import Motor
-import Work
+import Execute
 
 /// Template clone command handler.
-let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let gitURLOperand = operandValues[0]
-    let templateNameOperand = operandValues[optional: 1]
-    let branch = optionValues.findOptionalArgument(for: templateCloneBranchOption)
-    let force = optionValues.have(templateCloneForceOption)
-    let verbose = optionValues.have(templateCloneVerboseOption)
+func templateCloneCommandHandler(
+    gitURLOperand: String,
+    templateNameOperand: String?,
+    branch: String?,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {
@@ -53,24 +51,24 @@ let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionV
     }
 
     // Prepare paths.
-    let pathToCloneTemplate: Path
+    let pathToCloneTemplate: URL
     do {
         guard let gitURL = URL(string: gitURLOperand) else {
             printError("\(gitURLOperand) is not a valid url.")
             return
         }
         let templateName = templateNameOperand ?? gitURL.deletingPathExtension().lastPathComponent
-        pathToCloneTemplate = try getTemplateHomePath()[templateName]
+        pathToCloneTemplate = try getTemplateHomePath().appendingPathComponent(templateName)
     } catch {
         printError(error.localizedDescription)
         return
     }
 
     // Check existing template.
-    if pathToCloneTemplate.exists {
+    if FileManager.default.fileExists(atPath: pathToCloneTemplate.path) {
         if force {
             do {
-                try pathToCloneTemplate.remove()
+                try FileManager.default.removeItem(at: pathToCloneTemplate)
             } catch {
                 printError(error.localizedDescription)
                 return
@@ -88,20 +86,19 @@ let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionV
     if let branch = branch {
         gitCommand.append(" -b \(branch)")
     }
-    let gitClone = Work(command: gitCommand)
+    let gitClone = ShCommand(command: gitCommand)
 
     // Start cloning.
     if verbose {
         printVerbose("Execute: \(gitCommand)")
     }
     spinner.start(message: "Downloading...")
-    gitClone.start()
 
     // Clean up.
-    switch gitClone.result! {
-    case .success(_):
+    switch Executor().sync(gitClone) {
+    case .success:
         spinner.stop(message: "✓".color(.green) + " Done")
-    case .failure(_, _):
-        spinner.stop(message: "✗".color(.red) + " Failed: \(gitClone.standardError)")
+    case let .failure(error):
+        spinner.stop(message: "✗".color(.red) + " Failed: \(error.localizedDescription)")
     }
 }

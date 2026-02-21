@@ -1,8 +1,8 @@
 //
-//  helpCommand.swift
+//  EnvironmentError.swift
 //  Flint
 //
-//  Copyright (c) 2018 Jason Nam (https://jasonnam.com)
+//  Copyright (c) 2026 Jason Nam (https://jasonnam.com)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,14 @@
 //
 
 import Foundation
-import Bouncer
 
-/// Help command.
-/// `flint help`
-let helpCommand = Command(name: ["help"],
-                          operandType: .none,
-                          handler: helpCommandHandler)
+enum EnvironmentError: LocalizedError {
+    case unableToResolveTemplateHomeDirectory
 
-/// Help command alias.
-/// `flint h`
-let helpCommandAlias = Command(name: ["h"],
-                               operandType: .none,
-                               handler: helpCommandHandler)
+    var errorDescription: String? {
+        switch self {
+        case .unableToResolveTemplateHomeDirectory:
+            "Unable to resolve template home directory"
+        }
+    }
+}

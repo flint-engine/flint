@@ -24,7 +24,6 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Process variables.
 ///
@@ -33,7 +32,7 @@ import PathFinder
 ///   - outputPath: Processed file output path.
 ///   - template: Template.
 ///   - inputs: User input for variables.
-func processVariables(string: inout String, outputPath: Path? = nil, template: Template, inputs: [String: String]) {
+func processVariables(string: inout String, outputPath: URL? = nil, template: Template, inputs: [String: String]) {
     processIncludedFiles(string: &string, includedFilesPath: template.includedFilesPath)
     if let outputPath = outputPath {
         processFileAttributes(string: &string, outputPath: outputPath)

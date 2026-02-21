@@ -25,4 +25,4 @@
 
 import Foundation
 
-let flintVersion = "0.2.0"
+let flintVersion = "0.3.0"

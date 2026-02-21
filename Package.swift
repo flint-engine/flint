@@ -15,7 +15,7 @@ let package = Package(
         .package(url: "https://github.com/flintbox/Work", from: "0.1.1"),
         .package(url: "https://github.com/swift-cli/ansi-escape-code", from: "0.1.2"),
         .package(url: "https://github.com/jasonnam/PathFinder", .branch("develop")),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "1.0.0"),
+        .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.1"),
     ],
     targets: [
         .target(

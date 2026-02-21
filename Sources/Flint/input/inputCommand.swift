@@ -23,21 +23,42 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-/// Input command.
-/// `flint input [<template-name>] [--template | -t <template-path>]
-/// [--output | -o <output-path>] [--yaml | -y] [--force | -f] [--verbose | -v]`
-let inputCommand = Command(name: ["input"],
-                           operandType: .optionalEqual(1),
-                           options: inputCommandOptions,
-                           handler: inputCommandHandler)
+struct Input: ParsableCommand {
 
-/// Input command alias.
-/// `flint i [<template-name>] [--template | -t <template-path>]
-/// [--output | -o <output-path>] [--yaml | -y] [--force | -f] [--verbose | -v]`
-let inputCommandAlias = Command(name: ["i"],
-                                operandType: .optionalEqual(1),
-                                options: inputCommandOptions,
-                                handler: inputCommandHandler)
+    static let configuration = CommandConfiguration(
+        commandName: "input",
+        abstract: "Generate variable input file from template.",
+        aliases: ["i"]
+    )
+
+    @Argument(help: "Template name.")
+    var templateName: String?
+
+    @Option(name: [.customShort("t"), .customLong("template")], help: "Template path.")
+    var templatePath: String?
+
+    @Option(name: [.customShort("o"), .customLong("output")], help: "Output path.")
+    var outputPath: String?
+
+    @Flag(name: [.customShort("y"), .customLong("yaml")], help: "YAML format.")
+    var yaml: Bool = false
+
+    @Flag(name: [.customShort("f"), .customLong("force")], help: "Force overwrite.")
+    var force: Bool = false
+
+    @Flag(name: [.customShort("v"), .customLong("verbose")], help: "Verbose.")
+    var verbose: Bool = false
+
+    mutating func run() throws {
+        inputCommandHandler(
+            templateNameOperand: templateName,
+            templatePathOptionValue: templatePath,
+            outputPathOptionValue: outputPath,
+            yaml: yaml,
+            force: force,
+            verbose: verbose
+        )
+    }
+}

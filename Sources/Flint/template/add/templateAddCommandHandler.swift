@@ -24,17 +24,15 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 import Motor
 
 /// Template add command handler.
-let templateAddCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templatePathOperand = operandValues[0]
-    let templateNameOperand = operandValues[optional: 1]
-    let force = optionValues.have(templateAddForceOption)
-    let verbose = optionValues.have(templateAddVerboseOption)
+func templateAddCommandHandler(
+    templatePathOperand: String,
+    templateNameOperand: String?,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

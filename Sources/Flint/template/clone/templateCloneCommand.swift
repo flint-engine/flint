@@ -23,21 +23,38 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-/// Template clone command.
-/// `flint template clone <repository-url> [<template-name>]
-/// [--branch | -b <branch>] [--force | -f] [--verbose | -v]`
-let templateCloneCommand = Command(name: ["template", "clone"],
-                                   operandType: .range(1...2),
-                                   options: templateCloneCommandOptions,
-                                   handler: templateCloneCommandHandler)
+struct TemplateCloneCommand: ParsableCommand {
 
-/// Template clone command alias.
-/// `flint t c <repository-url> [<template-name>]
-/// [--branch | -b <branch>] [--force | -f] [--verbose | -v]`
-let templateCloneCommandAlias = Command(name: ["t", "c"],
-                                        operandType: .range(1...2),
-                                        options: templateCloneCommandOptions,
-                                        handler: templateCloneCommandHandler)
+    static let configuration = CommandConfiguration(
+        commandName: "clone",
+        abstract: "Clone remote template.",
+        aliases: ["c"]
+    )
+
+    @Argument(help: "Git URL of the template.")
+    var gitUrl: String
+
+    @Argument(help: "Template name.")
+    var templateName: String?
+
+    @Option(name: [.customShort("b"), .customLong("branch")], help: "Branch to clone.")
+    var branch: String?
+
+    @Flag(name: [.customShort("f"), .customLong("force")], help: "Force overwrite.")
+    var force: Bool = false
+
+    @Flag(name: [.customShort("v"), .customLong("verbose")], help: "Verbose.")
+    var verbose: Bool = false
+
+    mutating func run() throws {
+        templateCloneCommandHandler(
+            gitURLOperand: gitUrl,
+            templateNameOperand: templateName,
+            branch: branch,
+            force: force,
+            verbose: verbose
+        )
+    }
+}

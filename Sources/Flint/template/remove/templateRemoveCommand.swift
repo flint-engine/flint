@@ -23,19 +23,26 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-/// Template remove command.
-/// `flint template remove <template-name>... [--verbose | -v]`
-let templateRemoveCommand = Command(name: ["template", "remove"],
-                                    operandType: .range(1...Int.max),
-                                    options: templateRemoveCommandOptions,
-                                    handler: templateRemoveCommandHandler)
+struct TemplateRemoveCommand: ParsableCommand {
 
-/// Template remove command alias.
-/// `flint t r <template-name>... [--verbose | -v]`
-let templateRemoveCommandAlias = Command(name: ["t", "r"],
-                                         operandType: .range(1...Int.max),
-                                         options: templateRemoveCommandOptions,
-                                         handler: templateRemoveCommandHandler)
+    static let configuration = CommandConfiguration(
+        commandName: "remove",
+        abstract: "Remove templates.",
+        aliases: ["r"]
+    )
+
+    @Argument(help: "Template names to remove.")
+    var templateNames: [String] = []
+
+    @Flag(name: [.customShort("v"), .customLong("verbose")], help: "Verbose.")
+    var verbose: Bool = false
+
+    mutating func run() throws {
+        templateRemoveCommandHandler(
+            templateNames: templateNames,
+            verbose: verbose
+        )
+    }
+}

@@ -24,19 +24,17 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 import Motor
 import Execute
 
 /// Template clone command handler.
-let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let gitURLOperand = operandValues[0]
-    let templateNameOperand = operandValues[optional: 1]
-    let branch = optionValues.findOptionalArgument(for: templateCloneBranchOption)
-    let force = optionValues.have(templateCloneForceOption)
-    let verbose = optionValues.have(templateCloneVerboseOption)
+func templateCloneCommandHandler(
+    gitURLOperand: String,
+    templateNameOperand: String?,
+    branch: String?,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

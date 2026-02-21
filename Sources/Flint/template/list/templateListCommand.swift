@@ -23,19 +23,20 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-/// Template list command.
-/// `flint template list [--verbose | -v]`
-let templateListCommand = Command(name: ["template", "list"],
-                                  operandType: .none,
-                                  options: templateListCommandOptions,
-                                  handler: templateListCommandHandler)
+struct TemplateListCommand: ParsableCommand {
 
-/// Template list command alias.
-/// `flint t l [--verbose | -v]`
-let templateListCommandAlias = Command(name: ["t", "l"],
-                                       operandType: .none,
-                                       options: templateListCommandOptions,
-                                       handler: templateListCommandHandler)
+    static let configuration = CommandConfiguration(
+        commandName: "list",
+        abstract: "List templates.",
+        aliases: ["l"]
+    )
+
+    @Flag(name: [.customShort("v"), .customLong("verbose")], help: "Verbose.")
+    var verbose: Bool = false
+
+    mutating func run() throws {
+        templateListCommandHandler(verbose: verbose)
+    }
+}

@@ -23,19 +23,34 @@
 //  THE SOFTWARE.
 //
 
-import Foundation
-import Bouncer
+import ArgumentParser
 
-/// Template add command.
-/// `flint template add <path-to-template> [<template-name>] [--force | -f] [--verbose | -v]`
-let templateAddCommand = Command(name: ["template", "add"],
-                                 operandType: .range(1...2),
-                                 options: templateAddCommandOptions,
-                                 handler: templateAddCommandHandler)
+struct TemplateAddCommand: ParsableCommand {
 
-/// Template add command alias.
-/// `flint t a <path-to-template> [<template-name>] [--force | -f] [--verbose | -v]`
-let templateAddCommandAlias = Command(name: ["t", "a"],
-                                      operandType: .range(1...2),
-                                      options: templateAddCommandOptions,
-                                      handler: templateAddCommandHandler)
+    static let configuration = CommandConfiguration(
+        commandName: "add",
+        abstract: "Add a local template to template home path.",
+        aliases: ["a"]
+    )
+
+    @Argument(help: "Path to template directory.")
+    var templatePath: String
+
+    @Argument(help: "Template name.")
+    var templateName: String?
+
+    @Flag(name: [.customShort("f"), .customLong("force")], help: "Force overwrite.")
+    var force: Bool = false
+
+    @Flag(name: [.customShort("v"), .customLong("verbose")], help: "Verbose.")
+    var verbose: Bool = false
+
+    mutating func run() throws {
+        templateAddCommandHandler(
+            templatePathOperand: templatePath,
+            templateNameOperand: templateName,
+            force: force,
+            verbose: verbose
+        )
+    }
+}

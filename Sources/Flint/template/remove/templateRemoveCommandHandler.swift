@@ -24,13 +24,12 @@
 //
 
 import Foundation
-import Bouncer
 
 /// Template remove command handler.
-let templateRemoveCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNames = operandValues
-    let verbose = optionValues.have(templateRemoveVerboseOption)
+func templateRemoveCommandHandler(
+    templateNames: [String],
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

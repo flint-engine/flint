@@ -24,17 +24,16 @@
 //
 
 import Foundation
-import Bouncer
 
 /// Input command handler.
-let inputCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNameOperand = operandValues[optional: 0]
-    let templatePathOptionValue = optionValues.findOptionalArgument(for: inputTemplatePathOption)
-    let outputPathOptionValue = optionValues.findOptionalArgument(for: inputOutputPathOption)
-    let yaml = optionValues.have(inputYAMLOption)
-    let force = optionValues.have(inputForceOption)
-    let verbose = optionValues.have(inputVerboseOption)
+func inputCommandHandler(
+    templateNameOperand: String?,
+    templatePathOptionValue: String?,
+    outputPathOptionValue: String?,
+    yaml: Bool,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

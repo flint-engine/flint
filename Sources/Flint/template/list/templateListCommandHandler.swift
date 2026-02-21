@@ -24,12 +24,11 @@
 //
 
 import Foundation
-import Bouncer
 
 /// Template list command handler.
-let templateListCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let verbose = optionValues.have(templateListVerboseOption)
+func templateListCommandHandler(
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

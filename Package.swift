@@ -10,7 +10,7 @@ let package = Package(
             targets: ["Flint"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/flintbox/Bouncer", from: "0.1.3"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.7.0"),
         .package(url: "https://github.com/swift-cli/motor", from: "0.1.3"),
         .package(url: "https://github.com/swift-cli/execute", from: "0.1.2"),
         .package(url: "https://github.com/swift-cli/ansi-escape-code", from: "0.1.2"),
@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "Flint",
             dependencies: [
-                "Bouncer",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "Motor",
                 "Execute",
                 "ANSIEscapeCode",

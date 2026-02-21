@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "Bouncer",
-        "repositoryURL": "https://github.com/flintbox/Bouncer",
-        "state": {
-          "branch": null,
-          "revision": "afc6b0cd73ec2e965fc0336fc65b5ca57686dba0",
-          "version": "0.1.3"
-        }
-      },
-      {
         "package": "execute",
         "repositoryURL": "https://github.com/swift-cli/execute",
         "state": {
@@ -35,6 +26,15 @@
           "branch": null,
           "revision": "a2b7ac65fdd65171ef2ad5ea301b301c987da9b6",
           "version": "0.1.3"
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": null,
+          "revision": "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
+          "version": "1.7.0"
         }
       },
       {

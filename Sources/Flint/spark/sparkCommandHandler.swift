@@ -24,20 +24,18 @@
 //
 
 import Foundation
-import PathFinder
-import Bouncer
 import Execute
 import Yams
 
 /// Spark command handler.
-let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
-    // Grab values.
-    let templateNameOperand = operandValues[optional: 0]
-    let templatePathOptionValue = optionValues.findOptionalArgument(for: sparkTemplatePathOption)
-    let outputPathOptionValue = optionValues.findOptionalArgument(for: sparkOutputPathOption)
-    let inputFilePathOptionValue = optionValues.findOptionalArgument(for: sparkInputFilePathOption)
-    let force = optionValues.have(sparkForceOption)
-    let verbose = optionValues.have(sparkVerboseOption)
+func sparkCommandHandler(
+    templateNameOperand: String?,
+    templatePathOptionValue: String?,
+    outputPathOptionValue: String?,
+    inputFilePathOptionValue: String?,
+    force: Bool,
+    verbose: Bool
+) {
 
     // Print input summary.
     if verbose {

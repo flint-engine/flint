@@ -27,7 +27,7 @@ import Foundation
 import PathFinder
 import Bouncer
 import Motor
-import Work
+import Execute
 
 /// Template clone command handler.
 let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
@@ -88,20 +88,19 @@ let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionV
     if let branch = branch {
         gitCommand.append(" -b \(branch)")
     }
-    let gitClone = Work(command: gitCommand)
+    let gitClone = ShCommand(command: gitCommand)
 
     // Start cloning.
     if verbose {
         printVerbose("Execute: \(gitCommand)")
     }
     spinner.start(message: "Downloading...")
-    gitClone.start()
 
     // Clean up.
-    switch gitClone.result! {
-    case .success(_):
+    switch Executor().sync(gitClone) {
+    case .success:
         spinner.stop(message: "✓".color(.green) + " Done")
-    case .failure(_, _):
-        spinner.stop(message: "✗".color(.red) + " Failed: \(gitClone.standardError)")
+    case let .failure(error):
+        spinner.stop(message: "✗".color(.red) + " Failed: \(error.localizedDescription)")
     }
 }

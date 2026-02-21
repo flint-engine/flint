@@ -26,7 +26,7 @@
 import Foundation
 import PathFinder
 import Bouncer
-import Work
+import Execute
 import Yams
 
 /// Spark command handler.
@@ -146,20 +146,13 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     for prehook in template.manifest.prehooks ?? [] {
         let scriptPath = template.prehookScriptsPath[prehook]
         if scriptPath.exists {
-            let work = Work(command: "sh \"\(scriptPath.path)\"",
-                standardOutputHandler: { standardOutput in
-                    print(standardOutput)
-                }, standardErrorHandler: { standardError in
-                    print(standardError)
-                }
-            )
+            let work = ShCommand(command: "sh \"\(scriptPath.path)\"")
             var environment = ProcessInfo.processInfo.environment
             environment["FLINT_OUTPUT_PATH"] = outputPath.path
             for (key, input) in inputs {
                 environment["FLINT_\(key.replacingOccurrences(of: " ", with: "_"))"] = input
             }
-            work.task.environment = environment
-            work.start()
+            Executor().sync(work, environment: environment)
         } else {
             printWarning("Cannot find prehook script \(prehook)")
         }
@@ -234,20 +227,13 @@ let sparkCommandHandler: CommandHandler = { _, _, operandValues, optionValues in
     for posthook in template.manifest.posthooks ?? [] {
         let scriptPath = template.posthookScriptsPath[posthook]
         if scriptPath.exists {
-            let work = Work(command: "sh \"\(scriptPath.path)\"",
-                standardOutputHandler: { standardOutput in
-                    print(standardOutput)
-                }, standardErrorHandler: { standardError in
-                    print(standardError)
-                }
-            )
+            let work = ShCommand(command: "sh \"\(scriptPath.path)\"")
             var environment = ProcessInfo.processInfo.environment
             environment["FLINT_OUTPUT_PATH"] = outputPath.path
             for (key, input) in inputs {
                 environment["FLINT_\(key.replacingOccurrences(of: " ", with: "_"))"] = input
             }
-            work.task.environment = environment
-            work.start()
+            Executor().sync(work, environment: environment)
         } else {
             printWarning("Cannot find posthook script \(posthook)")
         }

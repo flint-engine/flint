@@ -20,6 +20,15 @@
         }
       },
       {
+        "package": "execute",
+        "repositoryURL": "https://github.com/swift-cli/execute",
+        "state": {
+          "branch": null,
+          "revision": "41d3515550531fa06ea1795745634427c3605781",
+          "version": "0.1.2"
+        }
+      },
+      {
         "package": "motor",
         "repositoryURL": "https://github.com/swift-cli/motor",
         "state": {
@@ -35,15 +44,6 @@
           "branch": "develop",
           "revision": "ff5bdafdcea9385c24e85bf502f862fecdba91e8",
           "version": null
-        }
-      },
-      {
-        "package": "Work",
-        "repositoryURL": "https://github.com/flintbox/Work",
-        "state": {
-          "branch": null,
-          "revision": "4a7a6ff7a87bac408cfc69382b8332f53f89e046",
-          "version": "0.1.1"
         }
       },
       {

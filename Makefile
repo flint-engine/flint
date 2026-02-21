@@ -1,5 +1,5 @@
 BIN_NAME = flint
-USR_BIN_PATH = /usr/local/bin/
+USR_BIN_PATH = ~/.local/bin/
 RELEASE_BIN_BUILD_PATH = ./.build/release/
 DEBUG_BIN_BUILD_PATH = ./.build/debug/
 

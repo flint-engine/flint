@@ -24,7 +24,6 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Template.
 struct Template {
@@ -32,36 +31,36 @@ struct Template {
     /// Manifest.
     let manifest: Manifest
     /// Template files path.
-    let templateFilesPath: Path
+    let templateFilesPath: URL
     /// Included files path.
-    let includedFilesPath: Path
+    let includedFilesPath: URL
     /// Prehook scripts path.
-    let prehookScriptsPath: Path
+    let prehookScriptsPath: URL
     /// Posthook scripts path.
-    let posthookScriptsPath: Path
+    let posthookScriptsPath: URL
     /// Template path.
-    let path: Path
+    let path: URL
 
     /// Initialize template.
     ///
     /// - Parameter path: Path for template directory.
     /// - Throws: Template format error.
-    init(path: Path) throws {
+    init(path: URL) throws {
         // Read manifest.
-        if path["template.json"].exists {
-            manifest = try readJSONManifest(atPath: path["template.json"])
-        } else if path["template.yaml"].exists {
-            manifest = try readYAMLManifest(atPath: path["template.yaml"])
-        } else if path["template.yml"].exists {
-            manifest = try readYAMLManifest(atPath: path["template.yml"])
+        if FileManager.default.fileExists(atPath: path.appendingPathComponent("template.json").path) {
+            manifest = try readJSONManifest(atPath: path.appendingPathComponent("template.json"))
+        } else if FileManager.default.fileExists(atPath: path.appendingPathComponent("template.yaml").path) {
+            manifest = try readYAMLManifest(atPath: path.appendingPathComponent("template.yaml"))
+        } else if FileManager.default.fileExists(atPath: path.appendingPathComponent("template.yml").path) {
+            manifest = try readYAMLManifest(atPath: path.appendingPathComponent("template.yml"))
         } else {
             throw TemplateFormatError.manifestFileNotExists(path)
         }
         // Set paths.
-        templateFilesPath = path["template"]
-        includedFilesPath = path["include"]
-        prehookScriptsPath = path["prehooks"]
-        posthookScriptsPath = path["posthooks"]
+        templateFilesPath = path.appendingPathComponent("template")
+        includedFilesPath = path.appendingPathComponent("include")
+        prehookScriptsPath = path.appendingPathComponent("prehooks")
+        posthookScriptsPath = path.appendingPathComponent("posthooks")
         self.path = path
     }
 }

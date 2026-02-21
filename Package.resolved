@@ -38,15 +38,6 @@
         }
       },
       {
-        "package": "PathFinder",
-        "repositoryURL": "https://github.com/jasonnam/PathFinder",
-        "state": {
-          "branch": "develop",
-          "revision": "ff5bdafdcea9385c24e85bf502f862fecdba91e8",
-          "version": null
-        }
-      },
-      {
         "package": "Yams",
         "repositoryURL": "https://github.com/jpsim/Yams.git",
         "state": {

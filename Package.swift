@@ -14,7 +14,6 @@ let package = Package(
         .package(url: "https://github.com/swift-cli/motor", from: "0.1.3"),
         .package(url: "https://github.com/swift-cli/execute", from: "0.1.2"),
         .package(url: "https://github.com/swift-cli/ansi-escape-code", from: "0.1.2"),
-        .package(url: "https://github.com/jasonnam/PathFinder", .branch("develop")),
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.1"),
     ],
     targets: [
@@ -25,7 +24,6 @@ let package = Package(
                 "Motor",
                 "Execute",
                 "ANSIEscapeCode",
-                "PathFinder",
                 "Yams"
             ]
         )

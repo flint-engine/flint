@@ -53,24 +53,24 @@ let templateCloneCommandHandler: CommandHandler = { _, _, operandValues, optionV
     }
 
     // Prepare paths.
-    let pathToCloneTemplate: Path
+    let pathToCloneTemplate: URL
     do {
         guard let gitURL = URL(string: gitURLOperand) else {
             printError("\(gitURLOperand) is not a valid url.")
             return
         }
         let templateName = templateNameOperand ?? gitURL.deletingPathExtension().lastPathComponent
-        pathToCloneTemplate = try getTemplateHomePath()[templateName]
+        pathToCloneTemplate = try getTemplateHomePath().appendingPathComponent(templateName)
     } catch {
         printError(error.localizedDescription)
         return
     }
 
     // Check existing template.
-    if pathToCloneTemplate.exists {
+    if FileManager.default.fileExists(atPath: pathToCloneTemplate.path) {
         if force {
             do {
-                try pathToCloneTemplate.remove()
+                try FileManager.default.removeItem(at: pathToCloneTemplate)
             } catch {
                 printError(error.localizedDescription)
                 return

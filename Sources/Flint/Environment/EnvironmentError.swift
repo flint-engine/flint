@@ -1,8 +1,8 @@
 //
-//  readManifest.swift
+//  EnvironmentError.swift
 //  Flint
 //
-//  Copyright (c) 2018 Jason Nam (https://jasonnam.com)
+//  Copyright (c) 2026 Jason Nam (https://jasonnam.com)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,14 @@
 //
 
 import Foundation
-import Yams
 
-/// Read JSON manifest file.
-///
-/// - Parameter path: Path for JSON manifest file.
-/// - Returns: Manifest.
-/// - Throws: Read data error. Decode error.
-func readJSONManifest(atPath path: URL) throws -> Manifest {
-    let data = try Data(contentsOf: path)
-    return try JSONDecoder().decode(Manifest.self, from: data)
-}
+enum EnvironmentError: LocalizedError {
+    case unableToResolveTemplateHomeDirectory
 
-/// Read YAML manifest file.
-///
-/// - Parameter path: Path for YAML manifest file.
-/// - Returns: Manifest.
-/// - Throws: Read data error. Decode error.
-func readYAMLManifest(atPath path: URL) throws -> Manifest {
-    let string = try String(contentsOf: path, encoding: .utf8)
-    return try YAMLDecoder().decode(Manifest.self, from: string)
+    var errorDescription: String? {
+        switch self {
+        case .unableToResolveTemplateHomeDirectory:
+            "Unable to resolve template home directory"
+        }
+    }
 }

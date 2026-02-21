@@ -24,17 +24,27 @@
 //
 
 import Foundation
-import PathFinder
 
 /// Get template home path.
 ///
 /// - Returns: Path for template home directory.
 /// - Throws: Error creating template home directory.
-func getTemplateHomePath() throws -> Path {
-    let templateHomePath = Env.templateHomePath ??
-        Path.applicationSupportDirectory["com.flintbox.flint"]["template"]
-    if !(templateHomePath.exists && templateHomePath.isDirectory) {
-        try templateHomePath.createDirectory()
+func getTemplateHomePath() throws -> URL {
+    let defaultTemplateHomePath = FileManager.default
+        .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+        .first?
+        .appendingPathComponent("com.flintbox.flint")
+        .appendingPathComponent("template")
+
+    guard let templateHomePath = Env.templateHomePath ?? defaultTemplateHomePath else {
+        throw EnvironmentError.unableToResolveTemplateHomeDirectory
+    }
+
+    var templateHomePathIsDirectory: ObjCBool = false
+    let templateHomePathExists = FileManager.default.fileExists(atPath: templateHomePath.path, isDirectory: &templateHomePathIsDirectory)
+
+    if !(templateHomePathExists && templateHomePathIsDirectory.boolValue) {
+        try FileManager.default.createDirectory(at: templateHomePath, withIntermediateDirectories: true)
     }
     return templateHomePath
 }

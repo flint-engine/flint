@@ -33,6 +33,7 @@ func sparkCommandHandler(
     templatePathOptionValue: String?,
     outputPathOptionValue: String?,
     inputFilePathOptionValue: String?,
+    variablesOptionValue: [String],
     force: Bool,
     verbose: Bool
 ) {
@@ -46,6 +47,7 @@ func sparkCommandHandler(
             └╴Template Path: \(templatePathOptionValue ?? "nil")
             └╴Output Path  : \(outputPathOptionValue ?? "nil")
             └╴Input Path   : \(inputFilePathOptionValue ?? "nil")
+            └╴Variables    : \(variablesOptionValue)
             └╴Force        : \(force)
             └╴Verbose      : \(verbose)
             """
@@ -121,6 +123,23 @@ func sparkCommandHandler(
         } catch {
             printError(error.localizedDescription)
             return
+        }
+    }
+
+    if !variablesOptionValue.isEmpty {
+        for variable in variablesOptionValue {
+            let parts = variable.split(separator: ":", maxSplits: 1).map(String.init)
+            if parts.count == 2 {
+                let key = parts[0]
+                let value = parts[1]
+                if (template.manifest.variables ?? []).map({ $0.name }).contains(key) {
+                    inputs[key] = value
+                } else {
+                    printWarning("Variable \(key) is not defined in the template manifest.")
+                }
+            } else {
+                printWarning("Invalid variable format: \(variable). Expected KEY:VALUE.")
+            }
         }
     }
 

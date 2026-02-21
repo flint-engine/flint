@@ -45,6 +45,9 @@ struct Spark: ParsableCommand {
     @Option(name: [.customShort("i"), .customLong("input")], help: "Input file path.")
     var inputFilePath: String?
 
+    @Option(name: [.customLong("variables")], parsing: .upToNextOption, help: "Variable inputs (e.g. VARIABLE_KEY:VARIABLE_VALUE).")
+    var variables: [String] = []
+
     @Flag(name: [.customShort("f"), .customLong("force")], help: "Force overwrite.")
     var force: Bool = false
 
@@ -57,6 +60,7 @@ struct Spark: ParsableCommand {
             templatePathOptionValue: templatePath,
             outputPathOptionValue: outputPath,
             inputFilePathOptionValue: inputFilePath,
+            variablesOptionValue: variables,
             force: force,
             verbose: verbose
         )

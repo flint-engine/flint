@@ -196,8 +196,13 @@ func sparkCommandHandler(
 
             let contentOutputPath = outputPath.appendingPathComponent(relativePath)
 
-            // Check existing file
-            if FileManager.default.fileExists(atPath: contentOutputPath.path) {
+            var contentIsDirectory: ObjCBool = false
+            _ = FileManager.default.fileExists(atPath: content.path, isDirectory: &contentIsDirectory)
+
+            var contentOutputIsDirectory: ObjCBool = false
+            let contentOutputExists = FileManager.default.fileExists(atPath: contentOutputPath.path, isDirectory: &contentOutputIsDirectory)
+
+            if contentOutputExists, !(contentIsDirectory.boolValue && contentOutputIsDirectory.boolValue) {
                 if force {
                     try FileManager.default.removeItem(at: contentOutputPath)
                 } else {
@@ -210,6 +215,9 @@ func sparkCommandHandler(
                                 try FileManager.default.removeItem(at: contentOutputPath)
                                 break inputLoop
                             case "skip", "s":
+                                if contentIsDirectory.boolValue {
+                                    enumerator?.skipDescendants()
+                                }
                                 continue enumerationLoop
                             case "abort", "a":
                                 return
@@ -226,9 +234,6 @@ func sparkCommandHandler(
             if !FileManager.default.fileExists(atPath: contentOutputPath.deletingLastPathComponent().path) {
                 try FileManager.default.createDirectory(at: contentOutputPath.deletingLastPathComponent(), withIntermediateDirectories: true)
             }
-
-            var contentIsDirectory: ObjCBool = false
-            _ = FileManager.default.fileExists(atPath: content.path, isDirectory: &contentIsDirectory)
 
             if contentIsDirectory.boolValue {
                 try FileManager.default.createDirectory(at: contentOutputPath, withIntermediateDirectories: true)
